@@ -1,5 +1,5 @@
 const express = require('express');
-//const fetch = require('node-fetch'); // Caso use Node <18, instale: npm install node-fetch
+// const fetch = require('node-fetch'); // Caso use Node <18, instale: npm install node-fetch
 const app = express();
 app.use(express.json()); // Para ler JSON do webhook Twilio
 
@@ -44,6 +44,21 @@ Empresa: ${client.company.name} - "${client.company.catchPhrase}"
 `;
 }
 
+// Função para criar resumo divertido do cliente
+function formatFunSummary(client) {
+  return `
+==============================
+Resumo divertido - Cliente: ${client.name}
+Username: ${client.username}
+Email: ${client.email}
+Telefone: ${client.phone}
+Endereço: ${client.address.street}, ${client.address.suite}, ${client.address.city}
+Website: ${client.website}
+Empresa: ${client.company.name} - "${client.company.bs}" 😄
+==============================
+`;
+}
+
 // Função do menu URA
 async function menuURA(option) {
   const clients = await getClientData();
@@ -65,8 +80,8 @@ async function menuURA(option) {
       responseText = `Olá! Aqui está um resumo amigável do cliente ${client.name} da empresa ${client.company.name}.`;
       break;
     case '3':
-      prompt = `Forneça informações da empresa do cliente: ${JSON.stringify(client.company)}`;
-      responseText = `Empresa: ${client.company.name}\nCatchPhrase: ${client.company.catchPhrase}\nAtividades: ${client.company.bs}`;
+      prompt = `Crie um resumo divertido e descontraído do cliente: ${JSON.stringify(client)} incluindo informações da empresa de forma leve e agradável.`;
+      responseText = formatFunSummary(client);
       break;
     default:
       return "Opção inválida. Escolha 1, 2 ou 3.";
@@ -94,11 +109,10 @@ app.listen(PORT, () => {
   console.log("Pronto para receber mensagens do Twilio Chat...");
 });
 
-
 // Teste rápido local
 (async () => {
   console.log(await menuURA('1')); // detalhes completos (cartão)
   console.log(await menuURA('2')); // resumo amigável
-  console.log(await menuURA('3')); // informações da empresa
+  console.log(await menuURA('3')); // resumo divertido
   console.log(await menuURA('99')); // opção inválida
 })();

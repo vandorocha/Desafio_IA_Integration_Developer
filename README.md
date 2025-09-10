@@ -2,7 +2,7 @@
 
 ## Objetivo do Projeto
 
-Este projeto tem como objetivo demonstrar a capacidade de integrar uma API REST utilizando JavaScript, criar um fluxo de atendimento simulado com Inteligência Artificial (URA via **Twilio Chat**), aplicar engenharia de prompt e realizar troubleshooting básico.
+Este projeto demonstra a capacidade de integrar uma API REST utilizando JavaScript, criar um fluxo de atendimento simulado com Inteligência Artificial (URA via **Twilio Chat**), aplicar engenharia de prompt e realizar troubleshooting básico.
 
 O fluxo foi estruturado para que, posteriormente, seja integrado ao **GPT-5 Plus**, simulando atendimento inteligente a clientes.
 
@@ -22,7 +22,8 @@ O fluxo foi estruturado para que, posteriormente, seja integrado ao **GPT-5 Plus
 ## Estrutura do Projeto
 
 ```
-Desafio_IA_Integration_Developer/
+
+Desafio\_IA\_Integration\_Developer/
 ├─ .codesandbox/
 ├─ .devcontainer/
 ├─ .gitignore
@@ -30,6 +31,7 @@ Desafio_IA_Integration_Developer/
 ├─ package.json
 ├─ yarn.lock
 ├─ README.md
+
 ```
 
 * **index.js** → script principal contendo:
@@ -37,7 +39,8 @@ Desafio_IA_Integration_Developer/
   * Fetch de dados da API pública
   * Menu URA via Twilio Chat
   * Função de envio de prompt para GPT-5 Plus (simulada)
-  * Testes do fluxo de atendimento
+  * Formatação de dados em **cartão**
+  * Testes do fluxo de atendimento, incluindo **resumo divertido**
 
 * **package.json / yarn.lock** → gerenciamento de dependências (Node.js)
 
@@ -52,8 +55,10 @@ Consumir dados de clientes simulados para alimentar o fluxo URA e gerar prompts 
 ### Endpoint utilizado
 
 ```
-GET https://jsonplaceholder.typicode.com/users
-```
+
+GET [https://jsonplaceholder.typicode.com/users](https://jsonplaceholder.typicode.com/users)
+
+````
 
 ### Exemplo de resposta
 
@@ -72,53 +77,45 @@ GET https://jsonplaceholder.typicode.com/users
   "phone": "1-770-736-8031 x56442",
   "website": "hildegard.org",
   "company": {
-    "name": "Romaguera-Crona"
+    "name": "Romaguera-Crona",
+    "catchPhrase": "Multi-layered client-server neural-net",
+    "bs": "harness real-time e-markets"
   }
 }
-```
+````
 
 ---
 
 ## Fluxo do Menu URA via Twilio Chat
 
-No `index.js`, implementamos um **menu de atendimento textual** com três opções:
+No `index.js`, implementamos um **menu de atendimento textual** com quatro opções:
 
 1. **Opção 1 – Detalhes completos do cliente**
 
-   * Exibe todas as informações do cliente retornadas pela API em formato “cartão” no console.
+   * Exibe todas as informações do cliente em formato “cartão” no console ou no chat.
 
 2. **Opção 2 – Resumo amigável do cliente**
 
-   * Cria um resumo amigável e fácil de ler, pronto para enviar ao usuário via chat.
+   * Cria um resumo amigável, pronto para enviar ao usuário via chat.
 
 3. **Opção 3 – Informações da empresa**
 
    * Exibe detalhes da empresa do cliente (nome, catchPhrase, atividades).
 
-4. **Opção inválida**
+4. **Opção 4 – Resumo divertido e descontraído**
+
+   * Gera um resumo leve e descontraído do cliente, incluindo informações da empresa, com emoji para destacar.
+
+5. **Opção inválida**
 
    * Retorna mensagem de erro indicando que a opção não é reconhecida.
 
-**Exemplo de console (simulação):**
+**Exemplo de console (simulação / webhook):**
 
-```
-Servidor rodando na porta 3000
-Pronto para receber mensagens do Twilio Chat...
-
-Prompt enviado: Forneça detalhes completos do cliente: {...JSON do cliente...}
-Resposta da IA (simulada): "..."
-
-==============================
-Nome: Leanne Graham (Bret)
-Email: Sincere@april.biz
-Telefone: 1-770-736-8031 x56442
-Endereço: Kulas Light, Apt. 556, Gwenborough
-Website: hildegard.org
-Empresa: Romaguera-Crona - "Multi-layered client-server neural-net"
-==============================
-
-Prompt enviado: Crie um resumo amigável do cliente: {...JSON do cliente...}
-Resposta da IA (simulada): "Olá! Aqui está um resumo amigável do cliente Leanne Graham da empresa Romaguera-Crona."
+```json
+{
+  "Body": "\n==============================\nResumo divertido - Cliente: Leanne Graham\nUsername: Bret\nEmail: Sincere@april.biz\nTelefone: 1-770-736-8031 x56442\nEndereço: Kulas Light, Apt. 556, Gwenborough\nWebsite: hildegard.org\nEmpresa: Romaguera-Crona - \"harness real-time e-markets\" 😄\n==============================\n"
+}
 ```
 
 ---
@@ -126,8 +123,9 @@ Resposta da IA (simulada): "Olá! Aqui está um resumo amigável do cliente Lean
 ## Estratégia de Troubleshooting
 
 * **Falha no fetch da API** → mensagem de erro no console e retorno de array vazio.
-* **Opção inválida no menu URA** → mensagem clara "Opção inválida. Escolha 1, 2 ou 3."
+* **Opção inválida no menu URA** → mensagem clara "Opção inválida. Escolha 1, 2, 3 ou 4."
 * **Falha na função de prompt para IA** → captura e exibição de erros no console.
+* **Webhook Twilio** → resposta JSON formatada com chave `Body`.
 
 > Garantia de fluxo funcional mesmo com dados inconsistentes ou indisponíveis.
 
@@ -136,17 +134,20 @@ Resposta da IA (simulada): "Olá! Aqui está um resumo amigável do cliente Lean
 ## Próximos Passos
 
 1. Substituir a função simulada `sendPromptToGPT` pela **chamada real ao GPT-5 Plus** usando a chave API.
-2. Implementar **resumos mais amigáveis e divertidos** via GPT-5 Plus.
-3. Adicionar **seleção de múltiplos prompts** por cliente.
-4. Melhorar **visualização de dados em formato “cartão”** para o console ou front-end básico.
-5. Documentar completamente a integração URA + IA com exemplos reais de prompts e respostas.
+2. Implementar **seleção de múltiplos prompts** por cliente.
+3. Melhorar **visualização de dados em formato “cartão”** para console ou front-end básico.
+4. Documentar completamente a integração URA + IA com exemplos reais de prompts e respostas.
 
 ---
 
 ## Observações Finais
 
 * Todo o fluxo está preparado para integração futura com GPT-5 Plus.
-* URA via Twilio Chat substitui a simulação anterior, garantindo **uso de webhooks e autenticação** no fluxo textual.
+* URA via Twilio Chat garante **uso de webhooks e autenticação** no fluxo textual.
 * Projeto já cumpre requisitos de integração API REST, manipulação de JSON, menu interativo e troubleshooting.
+* Resumo divertido e cartões já estão implementados no fluxo simulado.
 
 ---
+
+
+
