@@ -10,6 +10,11 @@
   "author": "Ives van Hoorne",
   "license": "MIT",
   "dependencies": {
-    "express": "^5.1.0"
+    "boxen": "^5.0.1",
+    "chalk": "^4.1.2",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "node-fetch": "^2.7.0",
+    "openai": "^5.20.1"
   }
 }

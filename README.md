@@ -2,28 +2,33 @@
 
 ## Objetivo do Projeto
 
-Este projeto demonstra a capacidade de integrar uma API REST utilizando JavaScript, criar um fluxo de atendimento simulado com Inteligência Artificial (URA via **Twilio Chat**), aplicar engenharia de prompt e realizar troubleshooting básico.
+Este projeto demonstra a capacidade de:
 
-O fluxo foi estruturado para que, posteriormente, seja integrado ao **GPT-5 Plus**, simulando atendimento inteligente a clientes.
+* Integrar uma **API REST** utilizando JavaScript.
+* Criar um **fluxo de atendimento simulado** com Inteligência Artificial (**URA local simulada**).
+* Aplicar **engenharia de prompt**.
+* Realizar **troubleshooting básico**.
+
+O fluxo está estruturado para futura integração com **GPT-5 Plus**, simulando atendimento inteligente a clientes.
 
 ---
 
 ## Tecnologias e Ferramentas
 
 * **Node.js** (JavaScript)
-* **Postman Web** (teste de requisições à API)
+* **Postman Web** ([teste de requisições à API](https://web.postman.co/))
 * **CodeSandbox / VS Code** (desenvolvimento do projeto)
-* **API pública JSONPlaceholder** (simulação de dados de clientes)
-* **Twilio Chat** (URA textual gratuita, integração atual)
-* **GPT-5 Plus** (simulação atual, integração futura)
+* **API pública JSONPlaceholder** ([https://jsonplaceholder.typicode.com/users](https://jsonplaceholder.typicode.com/users))
+* **URA local simulada** (menu interativo via terminal)
+* **GPT-5 Plus** (simulação atual, preparação para integração futura)
+* **boxen / chalk** → estilização de console para resumos e cartões
 
 ---
 
 ## Estrutura do Projeto
 
 ```
-
-Desafio\_IA\_Integration\_Developer/
+Desafio_IA_Integration_Developer/
 ├─ .codesandbox/
 ├─ .devcontainer/
 ├─ .gitignore
@@ -31,34 +36,26 @@ Desafio\_IA\_Integration\_Developer/
 ├─ package.json
 ├─ yarn.lock
 ├─ README.md
-
 ```
 
-* **index.js** → script principal contendo:
+* **index.js** → script principal:
 
   * Fetch de dados da API pública
-  * Menu URA via Twilio Chat
+  * Menu URA local simulada (terminal ou webhook)
   * Função de envio de prompt para GPT-5 Plus (simulada)
-  * Formatação de dados em **cartão**
+  * Formatação de dados em **cartão** via `boxen` + `chalk`
   * Testes do fluxo de atendimento, incluindo **resumo divertido**
-
-* **package.json / yarn.lock** → gerenciamento de dependências (Node.js)
+* **package.json / yarn.lock** → gerenciamento de dependências Node.js
 
 ---
 
 ## Integração com API Pública (JSONPlaceholder)
 
-### Objetivo
-
-Consumir dados de clientes simulados para alimentar o fluxo URA e gerar prompts dinâmicos para a IA.
-
 ### Endpoint utilizado
 
+```http
+GET https://jsonplaceholder.typicode.com/users
 ```
-
-GET [https://jsonplaceholder.typicode.com/users](https://jsonplaceholder.typicode.com/users)
-
-````
 
 ### Exemplo de resposta
 
@@ -82,72 +79,115 @@ GET [https://jsonplaceholder.typicode.com/users](https://jsonplaceholder.typicod
     "bs": "harness real-time e-markets"
   }
 }
-````
-
----
-
-## Fluxo do Menu URA via Twilio Chat
-
-No `index.js`, implementamos um **menu de atendimento textual** com quatro opções:
-
-1. **Opção 1 – Detalhes completos do cliente**
-
-   * Exibe todas as informações do cliente em formato “cartão” no console ou no chat.
-
-2. **Opção 2 – Resumo amigável do cliente**
-
-   * Cria um resumo amigável, pronto para enviar ao usuário via chat.
-
-3. **Opção 3 – Informações da empresa**
-
-   * Exibe detalhes da empresa do cliente (nome, catchPhrase, atividades).
-
-4. **Opção 4 – Resumo divertido e descontraído**
-
-   * Gera um resumo leve e descontraído do cliente, incluindo informações da empresa, com emoji para destacar.
-
-5. **Opção inválida**
-
-   * Retorna mensagem de erro indicando que a opção não é reconhecida.
-
-**Exemplo de console (simulação / webhook):**
-
-```json
-{
-  "Body": "\n==============================\nResumo divertido - Cliente: Leanne Graham\nUsername: Bret\nEmail: Sincere@april.biz\nTelefone: 1-770-736-8031 x56442\nEndereço: Kulas Light, Apt. 556, Gwenborough\nWebsite: hildegard.org\nEmpresa: Romaguera-Crona - \"harness real-time e-markets\" 😄\n==============================\n"
-}
 ```
 
 ---
 
-## Estratégia de Troubleshooting
+## Fluxo do Menu URA Local Simulada
 
-* **Falha no fetch da API** → mensagem de erro no console e retorno de array vazio.
-* **Opção inválida no menu URA** → mensagem clara "Opção inválida. Escolha 1, 2, 3 ou 4."
-* **Falha na função de prompt para IA** → captura e exibição de erros no console.
-* **Webhook Twilio** → resposta JSON formatada com chave `Body`.
+No `index.js`, implementamos um menu de atendimento **interativo via terminal**:
 
-> Garantia de fluxo funcional mesmo com dados inconsistentes ou indisponíveis.
+| Opção | Descrição                                                                          |
+| ----- | ---------------------------------------------------------------------------------- |
+| 1     | **Detalhes completos do cliente** – exibe todas as informações em formato “cartão” |
+| 2     | **Resumo amigável do cliente** – texto amigável para usuário                       |
+| 3     | **Informações da empresa** – nome, catchPhrase e atividades                        |
+| 4     | **Resumo divertido** – resumo leve e descontraído com emoji                        |
+| 5     | **Resumo com hobbies** – inclui hobbies fictícios para simulação personalizada     |
+| -     | **Opção inválida** – retorna mensagem de erro clara                                |
+
+### Exemplo de saída no console:
+
+```text
+   ╭──────────────────────────────────────────────────────────────────────────────╮
+   │                                                                              │
+   │   Nome: Leanne Graham (Bret)                                                 │
+   │   Email: Sincere@april.biz                                                   │
+   │   Telefone: 1-770-736-8031 x56442                                            │
+   │   Endereço: Kulas Light, Apt. 556, Gwenborough                               │
+   │   Website: hildegard.org                                                     │
+   │   Empresa: Romaguera-Crona - "Multi-layered client-server neural-net"        │
+   │                                                                              │
+   ╰──────────────────────────────────────────────────────────────────────────────╯
+IA complementa: [FAKE GPT RESPONSE] Simulação de resposta detalhada
+```
+
+> Mesmo sem conexão à API real ou ao GPT, o fluxo **simula respostas localmente**.
+
+---
+
+## 🛠 Estratégia de Troubleshooting
+
+* **Falha no fetch da API** → log de erro e array vazio.
+* **Opção inválida no menu URA** → mensagem: `"Opção inválida. Escolha 1, 2, 3, 4 ou 5."`
+* **Falha na função de prompt para IA** → captura e log de erro.
+* **Fallback local** → garante fluxo funcional mesmo sem acesso à IA ou API.
+
+---
+
+## Como Rodar Localmente
+
+1. Clonar o repositório ou abrir no CodeSandbox.
+2. Instalar dependências:
+
+```bash
+npm install
+```
+
+3. Criar arquivo `.env` com chave API (para testes reais com GPT):
+
+```
+OPENAI_API_KEY=sua_chave_aqui
+```
+
+4. Rodar aplicação:
+
+```bash
+node index.js
+```
+
+5. Seguir o **menu interativo** para testar todas as opções.
+6. Para testar **fallback local**, o sistema simula respostas automaticamente, sem necessidade de API ou GPT.
+
+---
+
+## Exemplos de Prompt e Output da IA
+
+### Prompt simulado
+
+```text
+Forneça detalhes completos do cliente: {"id":1,"name":"Leanne Graham",...}
+```
+
+### Output simulado
+
+```text
+[FAKE GPT RESPONSE] Simulação de resposta detalhada do cliente.
+```
+
+> O sistema ainda formata dados em **cartões**, resumos amigáveis, divertidos e com hobbies mesmo sem IA real.
 
 ---
 
 ## Próximos Passos
 
-1. Substituir a função simulada `sendPromptToGPT` pela **chamada real ao GPT-5 Plus** usando a chave API.
+1. Substituir `sendPromptToGPT` por **chamada real ao GPT-5 Plus** usando a chave API.
 2. Implementar **seleção de múltiplos prompts** por cliente.
-3. Melhorar **visualização de dados em formato “cartão”** para console ou front-end básico.
-4. Documentar completamente a integração URA + IA com exemplos reais de prompts e respostas.
+3. Melhorar **visualização em formato “cartão”** para console ou front-end.
+4. Documentar completamente integração URA + IA com prompts e respostas reais.
 
 ---
 
 ## Observações Finais
 
-* Todo o fluxo está preparado para integração futura com GPT-5 Plus.
-* URA via Twilio Chat garante **uso de webhooks e autenticação** no fluxo textual.
-* Projeto já cumpre requisitos de integração API REST, manipulação de JSON, menu interativo e troubleshooting.
-* Resumo divertido e cartões já estão implementados no fluxo simulado.
+* Todo o fluxo está pronto para integração futura com GPT-5 Plus ou URA real.
+* Menu local simulado garante **autonomia de testes e demonstração**.
+* Projeto cumpre requisitos de:
 
----
-
-
+  * Integração API REST
+  * Manipulação de JSON
+  * Menu interativo
+  * Troubleshooting
+* Resumo divertido, cartões e hobbies implementados.
+* Código limpo, modular e pronto para entrega.
 
