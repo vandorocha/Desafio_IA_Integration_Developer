@@ -1,34 +1,39 @@
-# AI Integration Developer - Desafio Técnico
+# AI Integration Developer - Desafio Técnico 🚀
+
+> Projeto de demonstração de integração de **API REST**, menu **URA local simulada** e simulação de respostas **GPT-5 Plus**.
+
+---
 
 ## Objetivo do Projeto
-
-Este projeto demonstra a capacidade de:
 
 * Integrar uma **API REST** utilizando JavaScript.
 * Criar um **fluxo de atendimento simulado** com Inteligência Artificial (**URA local simulada**).
 * Aplicar **engenharia de prompt**.
 * Realizar **troubleshooting básico**.
 
-O fluxo está estruturado para futura integração com **GPT-5 Plus**, simulando atendimento inteligente a clientes.
+O fluxo está preparado para futura integração com **GPT-5 Plus**, simulando atendimento inteligente a clientes.
 
 ---
 
 ## Tecnologias e Ferramentas
 
-* **Node.js** (JavaScript)
-* **Postman Web** ([teste de requisições à API](https://web.postman.co/))
-* **CodeSandbox / VS Code** (desenvolvimento do projeto)
-* **API pública JSONPlaceholder** ([https://jsonplaceholder.typicode.com/users](https://jsonplaceholder.typicode.com/users))
-* **URA local simulada** (menu interativo via terminal)
-* **GPT-5 Plus** (simulação atual, preparação para integração futura)
-* **boxen / chalk** → estilização de console para resumos e cartões
+* **Node.js** (18+)
+* **Express** – servidor web para webhook
+* **Chalk / Boxen** – estilização de console
+* **node-fetch** – fetch compatível com Node.js
+* **dotenv** – variáveis de ambiente
+* **OpenAI SDK** – integração com GPT real
+* **Readline** – input interativo pelo terminal
+* **Postman / curl** – para testes HTTP
+* **CodeSandbox / VS Code** – desenvolvimento
 
 ---
 
 ## Estrutura do Projeto
 
 ```
-Desafio_IA_Integration_Developer/
+
+Desafio\_IA\_Integration\_Developer/
 ├─ .codesandbox/
 ├─ .devcontainer/
 ├─ .gitignore
@@ -36,28 +41,48 @@ Desafio_IA_Integration_Developer/
 ├─ package.json
 ├─ yarn.lock
 ├─ README.md
-```
+
+````
 
 * **index.js** → script principal:
-
-  * Fetch de dados da API pública
+  * Busca dados do cliente via API pública
   * Menu URA local simulada (terminal ou webhook)
-  * Função de envio de prompt para GPT-5 Plus (simulada)
-  * Formatação de dados em **cartão** via `boxen` + `chalk`
-  * Testes do fluxo de atendimento, incluindo **resumo divertido**
-* **package.json / yarn.lock** → gerenciamento de dependências Node.js
+  * Envio de prompt para GPT real ou fallback local
+  * Formatação de dados em **cartões** via `boxen` + `chalk`
+  * Testes interativos e resumos divertidos
 
 ---
 
-## Integração com API Pública (JSONPlaceholder)
+## Dependências Node.js
 
-### Endpoint utilizado
+Instale todas as dependências:
 
-```http
-GET https://jsonplaceholder.typicode.com/users
+```bash
+npm install express chalk boxen node-fetch dotenv openai
 ```
 
-### Exemplo de resposta
+---
+
+## Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
+
+```env
+OPENAI_API_KEY=sua_chave_aqui
+USE_FAKE_AI=true 
+
+```
+* `OPENAI_API_KEY` → chave para usar GPT real
+* `USE_FAKE_AI=true` → ativa respostas simuladas sem precisar da API
+
+---
+
+## Integração com API Pública
+
+**Endpoint JSONPlaceholder:**
+[https://jsonplaceholder.typicode.com/users](https://jsonplaceholder.typicode.com/users)
+
+**Exemplo de resposta:**
 
 ```json
 {
@@ -65,261 +90,110 @@ GET https://jsonplaceholder.typicode.com/users
   "name": "Leanne Graham",
   "username": "Bret",
   "email": "Sincere@april.biz",
-  "address": {
-    "street": "Kulas Light",
-    "suite": "Apt. 556",
-    "city": "Gwenborough",
-    "zipcode": "92998-3874"
-  },
+  "address": { "street": "Kulas Light", "suite": "Apt. 556", "city": "Gwenborough", "zipcode": "92998-3874" },
   "phone": "1-770-736-8031 x56442",
   "website": "hildegard.org",
-  "company": {
-    "name": "Romaguera-Crona",
-    "catchPhrase": "Multi-layered client-server neural-net",
-    "bs": "harness real-time e-markets"
-  }
+  "company": { "name": "Romaguera-Crona", "catchPhrase": "Multi-layered client-server neural-net", "bs": "harness real-time e-markets" }
 }
 ```
 
 ---
 
-## Fluxo do Menu URA Local Simulada
+## Menu URA Local Simulada
 
-No `index.js`, implementamos um menu de atendimento **interativo via terminal**:
+| Opção | Descrição                              |
+| ----- | -------------------------------------- |
+| 1     | Detalhes completos do cliente (cartão) |
+| 2     | Resumo amigável                        |
+| 3     | Informações da empresa                 |
+| 4     | Resumo divertido                       |
+| 5     | Resumo com hobbies fictícios           |
 
-| Opção | Descrição                                                                          |
-| ----- | ---------------------------------------------------------------------------------- |
-| 1     | **Detalhes completos do cliente** – exibe todas as informações em formato “cartão” |
-| 2     | **Resumo amigável do cliente** – texto amigável para usuário                       |
-| 3     | **Informações da empresa** – nome, catchPhrase e atividades                        |
-| 4     | **Resumo divertido** – resumo leve e descontraído com emoji                        |
-| 5     | **Resumo com hobbies** – inclui hobbies fictícios para simulação personalizada     |
-| -     | **Opção inválida** – retorna mensagem de erro clara                                |
-
-### Exemplo de saída no console:
+**Exemplo de saída (opção 1):**
 
 ```text
-   ╭──────────────────────────────────────────────────────────────────────────────╮
-   │                                                                              │
-   │   Nome: Leanne Graham (Bret)                                                 │
-   │   Email: Sincere@april.biz                                                   │
-   │   Telefone: 1-770-736-8031 x56442                                            │
-   │   Endereço: Kulas Light, Apt. 556, Gwenborough                               │
-   │   Website: hildegard.org                                                     │
-   │   Empresa: Romaguera-Crona - "Multi-layered client-server neural-net"        │
-   │                                                                              │
-   ╰──────────────────────────────────────────────────────────────────────────────╯
+╭─────────────────────────────────────────────╮
+│ Nome: Leanne Graham (Bret)                  │
+│ Email: Sincere@april.biz                    │
+│ Telefone: 1-770-736-8031 x56442             │
+│ Endereço: Kulas Light, Apt. 556, Gwenborough│
+│ Website: hildegard.org                      │
+│ Empresa: Romaguera-Crona - "Multi-layered " │
+╰─────────────────────────────────────────────╯
 IA complementa: [FAKE GPT RESPONSE] Simulação de resposta detalhada
 ```
 
-> Mesmo sem conexão à API real ou ao GPT, o fluxo **simula respostas localmente**.
-
 ---
 
-## Testes e Exemplos de Output
+## Teste Interativo pelo Terminal
 
-### Testando o Webhook / Menu URA Local
-
-**URL:** `http://localhost:3000/webhook`
-**Método:** POST
-**Body (JSON):**
-
-```json
-{
-  "Body": "<opção>"
-}
-```
-
-**Opções válidas:**
-
-| Opção | Descrição                     |
-| ----- | ----------------------------- |
-| 1     | Detalhes completos do cliente |
-| 2     | Resumo amigável do cliente    |
-| 3     | Informações da empresa        |
-| 4     | Resumo divertido do cliente   |
-| 5     | Resumo com hobbies fictícios  |
-
-#### Exemplos de Teste via Postman ou curl
-
-**Exemplo 1 – Detalhes completos (opção 1)**
-
-Input:
-
-```json
-{
-  "Body": "1"
-}
-```
-
-Output:
-
-```text
-╭──────────────────────────────────────────────────────────────────────────────╮
-│                                                                              │
-│   Nome: Leanne Graham (Bret)                                                 │
-│   Email: Sincere@april.biz                                                   │
-│   Telefone: 1-770-736-8031 x56442                                            │
-│   Endereço: Kulas Light, Apt. 556, Gwenborough                               │
-│   Website: hildegard.org                                                     │
-│   Empresa: Romaguera-Crona - "Multi-layered client-server neural-net"        │
-│                                                                              │
-╰──────────────────────────────────────────────────────────────────────────────╯
-IA complementa: [FAKE GPT RESPONSE] Simulação de resposta detalhada
-```
-
-**Exemplo 2 – Resumo amigável (opção 2)**
-
-Input:
-
-```json
-{
-  "Body": "2"
-}
-```
-
-Output:
-
-```text
-Olá! Aqui está um resumo amigável do cliente Leanne Graham da empresa Romaguera-Crona.
-IA complementa: [FAKE GPT RESPONSE] Simulação de resumo amigável
-```
-
-**Exemplo 3 – Informações da empresa (opção 3)**
-
-Input:
-
-```json
-{
-  "Body": "3"
-}
-```
-
-Output:
-
-```text
-Empresa: Romaguera-Crona
-CatchPhrase: Multi-layered client-server neural-net
-Atividades: harness real-time e-markets
-IA complementa: [FAKE GPT RESPONSE] Simulação de informações da empresa
-```
-
-**Exemplo 4 – Resumo divertido (opção 4)**
-
-Input:
-
-```json
-{
-  "Body": "4"
-}
-```
-
-Output:
-
-```text
-Resumo divertido - Cliente: Leanne Graham
-Username: Bret
-Email: Sincere@april.biz
-Telefone: 1-770-736-8031 x56442
-Endereço: Kulas Light, Apt. 556, Gwenborough
-Website: hildegard.org
-Empresa: Romaguera-Crona - "harness real-time e-markets" 😄
-IA complementa: [FAKE GPT RESPONSE] Simulação de resumo divertido
-```
-
-**Exemplo 5 – Resumo com hobbies (opção 5)**
-
-Input:
-
-```json
-{
-  "Body": "5"
-}
-```
-
-Output:
-
-```text
-O cliente Leanne Graham gosta de ler, praticar esportes e explorar novas tecnologias. Empresa: Romaguera-Crona
-IA complementa: [FAKE GPT RESPONSE] Simulação de hobbies fictícios
-```
-
-> Esses exemplos permitem testar o webhook localmente usando Postman, curl ou outro cliente HTTP, mesmo sem conexão real com GPT-5 ou API externa.
-
----
-
-## Estratégia de Troubleshooting
-
-* **Falha no fetch da API** → log de erro e array vazio.
-* **Opção inválida no menu URA** → mensagem: `"Opção inválida. Escolha 1, 2, 3, 4 ou 5."`
-* **Falha na função de prompt para IA** → captura e log de erro.
-* **Fallback local** → garante fluxo funcional mesmo sem acesso à IA ou API.
-
----
-
-## Como Rodar Localmente
-
-1. Clonar o repositório ou abrir no CodeSandbox.
-2. Instalar dependências:
-
-```bash
-npm install
-```
-
-3. Criar arquivo `.env` com chave API (para testes reais com GPT):
-
-```
-OPENAI_API_KEY=sua_chave_aqui
-```
-
-4. Rodar aplicação:
+Execute:
 
 ```bash
 node index.js
 ```
 
-5. Seguir o **menu interativo** para testar todas as opções.
-6. Para testar **fallback local**, o sistema simula respostas automaticamente, sem necessidade de API ou GPT.
+Escolha uma opção de 1 a 5 para ver o output formatado.
+
+> Funciona mesmo com fallback local (`USE_FAKE_AI=true`).
 
 ---
 
-## Exemplos de Prompt e Output da IA
+## Webhook `/webhook`
 
-### Prompt simulado
+Rota HTTP para receber mensagens (simula Twilio Chat):
 
-```text
-Forneça detalhes completos do cliente: {"id":1,"name":"Leanne Graham",...}
+```http
+POST http://localhost:3000/webhook
+Content-Type: application/json
+
+Body:
+{
+  "Body": "1"
+}
 ```
 
-### Output simulado
+Resposta JSON:
 
-```text
-[FAKE GPT RESPONSE] Simulação de resposta detalhada do cliente.
+```json
+{
+  "Body": "╭─...\nIA complementa: [FAKE GPT RESPONSE]..."
+}
 ```
 
-> O sistema ainda formata dados em **cartões**, resumos amigáveis, divertidos e com hobbies mesmo sem IA real.
+> Testável via Postman, curl ou Twilio Chat.
+
+---
+
+## Estratégia de Troubleshooting
+
+* Falha no fetch da API → array vazio + log de erro
+* Opção inválida no menu → `"Opção inválida. Escolha 1, 2, 3, 4 ou 5."`
+* Falha ao chamar IA → fallback local garante fluxo funcional
 
 ---
 
 ## Próximos Passos
 
-1. Substituir `sendPromptToGPT` por **chamada real ao GPT-5 Plus** usando a chave API.
-2. Implementar **seleção de múltiplos prompts** por cliente.
-3. Melhorar **visualização em formato “cartão”** para console ou front-end.
-4. Documentar completamente integração URA + IA com prompts e respostas reais.
+1. Substituir `USE_FAKE_AI=true` pelo GPT real usando `OPENAI_API_KEY`
+2. Seleção de múltiplos prompts por cliente
+3. Melhorar visualização dos cartões
+4. Documentar prompts reais e respostas da IA
 
 ---
 
 ## Observações Finais
 
-* Todo o fluxo está pronto para integração futura com GPT-5 Plus ou URA real.
-* Menu local simulado garante **autonomia de testes e demonstração**.
-* Projeto cumpre requisitos de:
+* Projeto pronto para rodar localmente sem GPT
+* Testes interativos via terminal ou webhook
+* Código modular, limpo e pronto para demonstração
 
-  * Integração API REST
-  * Manipulação de JSON
-  * Menu interativo
-  * Troubleshooting
-* Resumo divertido, cartões e hobbies implementados.
-* Código limpo, modular e pronto para entrega.
+---
+
+## Links Úteis
+
+* [JSONPlaceholder API](https://jsonplaceholder.typicode.com/)
+* [Node.js](https://nodejs.org/)
+* [Express](https://expressjs.com/)
+* [OpenAI API](https://platform.openai.com/)
 
