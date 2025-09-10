@@ -116,7 +116,139 @@ IA complementa: [FAKE GPT RESPONSE] Simulação de resposta detalhada
 
 ---
 
-## 🛠 Estratégia de Troubleshooting
+## Testes e Exemplos de Output
+
+### Testando o Webhook / Menu URA Local
+
+**URL:** `http://localhost:3000/webhook`
+**Método:** POST
+**Body (JSON):**
+
+```json
+{
+  "Body": "<opção>"
+}
+```
+
+**Opções válidas:**
+
+| Opção | Descrição                     |
+| ----- | ----------------------------- |
+| 1     | Detalhes completos do cliente |
+| 2     | Resumo amigável do cliente    |
+| 3     | Informações da empresa        |
+| 4     | Resumo divertido do cliente   |
+| 5     | Resumo com hobbies fictícios  |
+
+#### Exemplos de Teste via Postman ou curl
+
+**Exemplo 1 – Detalhes completos (opção 1)**
+
+Input:
+
+```json
+{
+  "Body": "1"
+}
+```
+
+Output:
+
+```text
+╭──────────────────────────────────────────────────────────────────────────────╮
+│                                                                              │
+│   Nome: Leanne Graham (Bret)                                                 │
+│   Email: Sincere@april.biz                                                   │
+│   Telefone: 1-770-736-8031 x56442                                            │
+│   Endereço: Kulas Light, Apt. 556, Gwenborough                               │
+│   Website: hildegard.org                                                     │
+│   Empresa: Romaguera-Crona - "Multi-layered client-server neural-net"        │
+│                                                                              │
+╰──────────────────────────────────────────────────────────────────────────────╯
+IA complementa: [FAKE GPT RESPONSE] Simulação de resposta detalhada
+```
+
+**Exemplo 2 – Resumo amigável (opção 2)**
+
+Input:
+
+```json
+{
+  "Body": "2"
+}
+```
+
+Output:
+
+```text
+Olá! Aqui está um resumo amigável do cliente Leanne Graham da empresa Romaguera-Crona.
+IA complementa: [FAKE GPT RESPONSE] Simulação de resumo amigável
+```
+
+**Exemplo 3 – Informações da empresa (opção 3)**
+
+Input:
+
+```json
+{
+  "Body": "3"
+}
+```
+
+Output:
+
+```text
+Empresa: Romaguera-Crona
+CatchPhrase: Multi-layered client-server neural-net
+Atividades: harness real-time e-markets
+IA complementa: [FAKE GPT RESPONSE] Simulação de informações da empresa
+```
+
+**Exemplo 4 – Resumo divertido (opção 4)**
+
+Input:
+
+```json
+{
+  "Body": "4"
+}
+```
+
+Output:
+
+```text
+Resumo divertido - Cliente: Leanne Graham
+Username: Bret
+Email: Sincere@april.biz
+Telefone: 1-770-736-8031 x56442
+Endereço: Kulas Light, Apt. 556, Gwenborough
+Website: hildegard.org
+Empresa: Romaguera-Crona - "harness real-time e-markets" 😄
+IA complementa: [FAKE GPT RESPONSE] Simulação de resumo divertido
+```
+
+**Exemplo 5 – Resumo com hobbies (opção 5)**
+
+Input:
+
+```json
+{
+  "Body": "5"
+}
+```
+
+Output:
+
+```text
+O cliente Leanne Graham gosta de ler, praticar esportes e explorar novas tecnologias. Empresa: Romaguera-Crona
+IA complementa: [FAKE GPT RESPONSE] Simulação de hobbies fictícios
+```
+
+> Esses exemplos permitem testar o webhook localmente usando Postman, curl ou outro cliente HTTP, mesmo sem conexão real com GPT-5 ou API externa.
+
+---
+
+## Estratégia de Troubleshooting
 
 * **Falha no fetch da API** → log de erro e array vazio.
 * **Opção inválida no menu URA** → mensagem: `"Opção inválida. Escolha 1, 2, 3, 4 ou 5."`
