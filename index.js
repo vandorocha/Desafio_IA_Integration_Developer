@@ -7,14 +7,10 @@ const boxen = require('boxen');
 const fetch = require('node-fetch');
 require('dotenv').config();
 
-// ================================
 // Histórico de conversa para diálogo contínuo
-// ================================
 let chatHistory = [];
 
-// ================================
-// Função para chamar OpenRouter GPT-3.5 Turbo com chat contínuo
-// ================================
+// Função para chamar OpenRouter GPT-3.5 Turbo com chat 
 async function enviarPromptIA(prompt) {
   if (process.env.USE_FAKE_AI === 'true') {
     const fakeResposta = `[FAKE GPT RESPONSE] ${prompt}`;
@@ -62,9 +58,7 @@ async function enviarPromptIA(prompt) {
   }
 }
 
-// ================================
-// Buscar dados de clientes
-// ================================
+// Busca de dados de clientes
 async function buscarClientes() {
   try {
     const resposta = await fetch('https://jsonplaceholder.typicode.com/users');
@@ -77,9 +71,7 @@ async function buscarClientes() {
   }
 }
 
-// ================================
-// Funções de formatação de saída
-// ================================
+// Formatação de saída
 function formatarClienteSimples(cliente) {
   return `
 === Dados do Cliente (Claros) ===
@@ -129,9 +121,7 @@ function formatarResumoComHobbies(cliente) {
   return boxen(chalk.yellowBright(conteudo), { padding: 1, margin: 1, borderStyle: 'round', borderColor: 'blue' });
 }
 
-// ================================
 // Simulação de Troubleshooting
-// ================================
 async function troubleshooting() {
   console.log(chalk.yellow("\n=== Iniciando Troubleshooting ==="));
 
@@ -156,9 +146,7 @@ async function troubleshooting() {
   console.log(chalk.green("=== Troubleshooting concluído ===\n"));
 }
 
-// ================================
-// Menu URA (opções numéricas)
-// ================================
+// Menu URA 
 async function menuURA(opcao) {
   const clientes = await buscarClientes();
   if (clientes.length === 0) return "Não há dados de clientes disponíveis.";
@@ -199,12 +187,20 @@ async function menuURA(opcao) {
   return respostaTexto + "\n\n" + chalk.gray("IA complementa: " + respostaIA);
 }
 
-// ================================
 // Função de chat com menu numérico integrado
-// ================================
 async function chatComMenu() {
   console.log(chalk.green("\n=== Chat & Menu iniciado ==="));
   console.log("Digite uma pergunta livre ou um número do menu (1-6). Digite 'sair' para encerrar.\n");
+  
+  // Adicionando detalhamento do menu
+  console.log("Opções do Menu:");
+  console.log("Digite 1 → Deve exibir detalhes completos do cliente em texto + cartão colorido.");
+  console.log("Digite 2 → Deve exibir um resumo amigável do cliente.");
+  console.log("Digite 3 → Deve exibir apenas informações da empresa.");
+  console.log("Digite 4 → Deve exibir um resumo divertido com emojis.");
+  console.log("Digite 5 → Deve exibir resumo com hobbies fictícios.");
+  console.log("Digite qualquer pergunta em texto → A IA (real ou simulada) deve responder, mantendo histórico no chat.");
+  console.log("Digite sair → Encerra o chat contínuo.\n");
 
   const rl = readline.createInterface({
     input: process.stdin,
@@ -223,17 +219,43 @@ async function chatComMenu() {
     if (['1','2','3','4','5','6'].includes(texto)) {
       const resultado = await menuURA(texto);
       console.log(resultado + "\n");
-    } else {
-      // Pergunta livre
-      const resposta = await enviarPromptIA(input);
-      console.log(chalk.gray("\nIA: " + resposta + "\n"));
+      return;
     }
+
+    // Pergunta livre: buscar clientes da API
+    const clientes = await buscarClientes();
+    let promptFinal = input;
+    let dadosParaIA = [];
+
+    // Filtra clientes se o input contém palavras-chave
+    if (texto.includes("cliente") || texto.includes("todos") || texto.includes("nome") || texto.includes("email") || texto.includes("empresa")) {
+      
+      // Caso o usuário peça todos os clientes
+      if (texto.includes("todos")) {
+        dadosParaIA = clientes;
+      } else {
+        // Tenta encontrar clientes que correspondam a algum termo do input
+        dadosParaIA = clientes.filter(c =>
+          c.name.toLowerCase().includes(texto) ||
+          c.username.toLowerCase().includes(texto) ||
+          c.email.toLowerCase().includes(texto) ||
+          c.company.name.toLowerCase().includes(texto)
+        );
+      }
+
+      if (dadosParaIA.length > 0) {
+        promptFinal += `\nAqui estão os dados do(s) cliente(s) encontrados:\n${JSON.stringify(dadosParaIA)}`;
+      }
+    }
+
+    // Envia para IA
+    const resposta = await enviarPromptIA(promptFinal);
+    console.log(chalk.gray("\nIA: " + resposta + "\n"));
   });
 }
 
-// ================================
+
 // Rota do webhook
-// ================================
 app.post('/webhook', async (req, res) => {
   const mensagem = req.body.Body;
   console.log('Mensagem recebida do Chat:', mensagem);
@@ -242,16 +264,15 @@ app.post('/webhook', async (req, res) => {
   res.json({ Body: resposta });
 });
 
-// ================================
-// Rodar servidor Node
-// ================================
+
+// Executar servidor Node
 const PORTA = 3000;
 app.listen(PORTA, () => {
   console.log(`Servidor rodando na porta ${PORTA}`);
   console.log("Pronto para receber mensagens do webhook...");
 });
 
-// ================================
-// Iniciar chat com menu integrado
-// ================================
+// Inicia chat com menu
 chatComMenu();
+
+
