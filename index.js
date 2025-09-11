@@ -1,42 +1,44 @@
 const express = require('express');
 const app = express();
-app.use(express.json()); // Para ler JSON do webhook Twilio
+app.use(express.json()); // Para ler JSON de webhooks (ex: Twilio)
 const readline = require('readline');
 const chalk = require('chalk');
 const boxen = require('boxen');
-const fetch = require('node-fetch'); // <- garante compatibilidade do fetch no Node
+const fetch = require('node-fetch'); // Compatibilidade do fetch no Node
 require('dotenv').config(); // Carrega variáveis do .env
 const OpenAI = require('openai');
 
 // Inicializa cliente OpenAI
-const client = new OpenAI({
+const clienteIA = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Função para buscar clientes
-async function getClientData() {
+// Buscar dados de clientes
+async function buscarClientes() {
   try {
-    const response = await fetch('https://jsonplaceholder.typicode.com/users');
-    if (!response.ok) throw new Error(`Erro ao buscar clientes: ${response.status}`);
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error("Falha no fetch:", error.message);
+    const resposta = await fetch('https://jsonplaceholder.typicode.com/users');
+    if (!resposta.ok) throw new Error(`Erro ao buscar clientes: ${resposta.status}`);
+    const dados = await resposta.json();
+    return dados;
+  } catch (erro) {
+    console.error("Falha no fetch:", erro.message);
     return [];
   }
 }
 
-// Função para enviar prompt ao GPT real ou fallback local
-async function sendPromptToGPT(prompt) {
+//Enviar prompt à IA 
+async function enviarPromptIA(prompt) {
   try {
     if (process.env.USE_FAKE_AI === 'true') {
-      // Fallback local: respostas simuladas
-      console.log("Prompt enviado (simulado):", prompt);
+      console.log(chalk.yellow("\n=== PROMPT ENVIADO PARA A IA (simulado) ==="));
+      console.log(prompt);
       return `[FAKE GPT RESPONSE] Simulação de resposta para: "${prompt}"`;
     }
 
-    // Chamada real à API OpenAI
-    const response = await client.chat.completions.create({
+    console.log(chalk.yellow("\n=== PROMPT ENVIADO PARA A IA ==="));
+    console.log(prompt);
+
+    const resposta = await clienteIA.chat.completions.create({
       model: "gpt-4o-mini", // rápido e barato, pode trocar por "gpt-4o"
       messages: [
         { role: "system", content: "Você é um assistente que responde de forma clara e amigável." },
@@ -44,107 +46,155 @@ async function sendPromptToGPT(prompt) {
       ],
     });
 
-    return response.choices[0].message.content;
-  } catch (error) {
-    console.error("Erro ao enviar prompt:", error.message);
+    const respostaIA = resposta.choices[0].message.content;
+
+    console.log(chalk.green("\n=== RESPOSTA DA IA ==="));
+    console.log(respostaIA);
+
+    return respostaIA;
+  } catch (erro) {
+    console.error("Erro ao consultar a IA:", erro.message);
     return "Erro ao consultar a IA.";
   }
 }
 
-// Funções de formatação do cliente
-function formatClientCardStyled(client) {
-  const content = `
-Nome: ${client.name} (${client.username})
-Email: ${client.email}
-Telefone: ${client.phone}
-Endereço: ${client.address.street}, ${client.address.suite}, ${client.address.city}
-Website: ${client.website}
-Empresa: ${client.company.name} - "${client.company.catchPhrase}"
+// Formatar sáida dos clientes
+function formatarClienteSimples(cliente) {
+  return `
+=== Dados do Cliente (Claros) ===
+Nome: ${cliente.name}
+Username: ${cliente.username}
+Email: ${cliente.email}
+Telefone: ${cliente.phone}
+Endereço: ${cliente.address.street}, ${cliente.address.suite}, ${cliente.address.city}
+Website: ${cliente.website}
+Empresa: ${cliente.company.name} (${cliente.company.catchPhrase})
+=================================
   `;
-  return boxen(chalk.cyan(content), { padding: 1, margin: 1, borderStyle: 'round', borderColor: 'yellow' });
 }
 
-function formatFunSummaryStyled(client) {
-  const content = `
-Resumo divertido - Cliente: ${client.name}
-Username: ${client.username}
-Email: ${client.email}
-Telefone: ${client.phone}
-Endereço: ${client.address.street}, ${client.address.suite}, ${client.address.city}
-Website: ${client.website}
-Empresa: ${client.company.name} - "${client.company.bs}" 😄
+function formatarClienteCartao(cliente) {
+  const conteudo = `
+Nome: ${cliente.name} (${cliente.username})
+Email: ${cliente.email}
+Telefone: ${cliente.phone}
+Endereço: ${cliente.address.street}, ${cliente.address.suite}, ${cliente.address.city}
+Website: ${cliente.website}
+Empresa: ${cliente.company.name} - "${cliente.company.catchPhrase}"
   `;
-  return boxen(chalk.greenBright(content), { padding: 1, margin: 1, borderStyle: 'round', borderColor: 'magenta' });
+  return boxen(chalk.cyan(conteudo), { padding: 1, margin: 1, borderStyle: 'round', borderColor: 'yellow' });
 }
 
-function formatFriendlySummaryStyled(client) {
-  const content = `Olá! Aqui está um resumo amigável do cliente ${client.name} da empresa ${client.company.name}.`;
-  return boxen(chalk.blueBright(content), { padding: 1, margin: 1, borderStyle: 'round', borderColor: 'green' });
+function formatarResumoDivertido(cliente) {
+  const conteudo = `
+Resumo divertido - Cliente: ${cliente.name}
+Username: ${cliente.username}
+Email: ${cliente.email}
+Telefone: ${cliente.phone}
+Endereço: ${cliente.address.street}, ${cliente.address.suite}, ${cliente.address.city}
+Website: ${cliente.website}
+Empresa: ${cliente.company.name} - "${cliente.company.bs}" 😄
+  `;
+  return boxen(chalk.greenBright(conteudo), { padding: 1, margin: 1, borderStyle: 'round', borderColor: 'magenta' });
 }
 
-function formatHobbiesSummaryStyled(client) {
-  const content = `O cliente ${client.name} gosta de ler, praticar esportes e explorar novas tecnologias. Empresa: ${client.company.name}`;
-  return boxen(chalk.yellowBright(content), { padding: 1, margin: 1, borderStyle: 'round', borderColor: 'blue' });
+function formatarResumoAmigavel(cliente) {
+  const conteudo = `Olá! Aqui está um resumo amigável do cliente ${cliente.name} da empresa ${cliente.company.name}.`;
+  return boxen(chalk.blueBright(conteudo), { padding: 1, margin: 1, borderStyle: 'round', borderColor: 'green' });
 }
 
-// Função do menu URA
-async function menuURA(option) {
-  const clients = await getClientData();
-  if (clients.length === 0) return "Não há dados de clientes disponíveis.";
+function formatarResumoComHobbies(cliente) {
+  const conteudo = `O cliente ${cliente.name} gosta de ler, praticar esportes e explorar novas tecnologias. Empresa: ${cliente.company.name}`;
+  return boxen(chalk.yellowBright(conteudo), { padding: 1, margin: 1, borderStyle: 'round', borderColor: 'blue' });
+}
 
-  const client = clients[0]; // sempre pegando o primeiro cliente
+
+// Simulação de Troubleshooting
+async function troubleshooting() {
+  console.log(chalk.yellow("\n=== Iniciando Troubleshooting ==="));
+
+  // Cenário 1: API fora do ar
+  try {
+    await fetch('https://jsonplaceholder.typicode.com/invalid-endpoint');
+  } catch (erro) {
+    console.error(chalk.red("Erro simulado: API fora do ar →", erro.message));
+  }
+
+  // Cenário 2: Erro de autenticação simulado
+  try {
+    throw new Error("Token inválido ou não fornecido.");
+  } catch (erro) {
+    console.error(chalk.red("Erro simulado: Autenticação falhou →", erro.message));
+  }
+
+  // Cenário 3: JSON inválido
+  try {
+    JSON.parse("{ invalid json }");
+  } catch (erro) {
+    console.error(chalk.red("Erro simulado: Falha ao parsear JSON →", erro.message));
+  }
+
+  console.log(chalk.green("=== Troubleshooting concluído ===\n"));
+}
+
+// Menu URA
+async function menuURA(opcao) {
+  const clientes = await buscarClientes();
+  if (clientes.length === 0) return "Não há dados de clientes disponíveis.";
+
+  const cliente = clientes[0]; // sempre pegando o primeiro cliente
   let prompt = "";
-  let responseText = "";
+  let respostaTexto = "";
 
-  switch(option) {
+  switch(opcao) {
     case '1': // Detalhes completos
-      prompt = `Forneça detalhes completos do cliente: ${JSON.stringify(client)}`;
-      responseText = formatClientCardStyled(client);
+      prompt = `Forneça detalhes completos do cliente: ${JSON.stringify(cliente)}`;
+      respostaTexto = formatarClienteSimples(cliente) + "\n" + formatarClienteCartao(cliente);
       break;
     case '2': // Resumo amigável
-      prompt = `Crie um resumo amigável do cliente: ${JSON.stringify(client)}`;
-      responseText = formatFriendlySummaryStyled(client);
+      prompt = `Crie um resumo amigável do cliente: ${JSON.stringify(cliente)}`;
+      respostaTexto = formatarResumoAmigavel(cliente);
       break;
     case '3': // Informações da empresa
-      prompt = `Forneça informações da empresa do cliente: ${JSON.stringify(client.company)}`;
-      responseText = `Empresa: ${client.company.name}\nCatchPhrase: ${client.company.catchPhrase}\nAtividades: ${client.company.bs}`;
+      prompt = `Forneça informações da empresa do cliente: ${JSON.stringify(cliente.company)}`;
+      respostaTexto = `Empresa: ${cliente.company.name}\nCatchPhrase: ${cliente.company.catchPhrase}\nAtividades: ${cliente.company.bs}`;
       break;
     case '4': // Resumo divertido
-      prompt = `Crie um resumo divertido e descontraído do cliente: ${JSON.stringify(client)}`;
-      responseText = formatFunSummaryStyled(client);
+      prompt = `Crie um resumo divertido e descontraído do cliente: ${JSON.stringify(cliente)}`;
+      respostaTexto = formatarResumoDivertido(cliente);
       break;
     case '5': // Resumo com hobbies
-      prompt = `Crie um resumo incluindo hobbies fictícios do cliente: ${JSON.stringify(client)}`;
-      responseText = formatHobbiesSummaryStyled(client);
+      prompt = `Crie um resumo incluindo hobbies fictícios do cliente: ${JSON.stringify(cliente)}`;
+      respostaTexto = formatarResumoComHobbies(cliente);
       break;
     default:
       return "Opção inválida. Escolha 1, 2, 3, 4 ou 5.";
   }
 
   // Chamada para a IA (real ou simulada)
-  const aiResponse = await sendPromptToGPT(prompt);
-  console.log("Resposta da IA:", aiResponse);
-
-  return responseText + "\n\n" + chalk.gray("IA complementa: " + aiResponse);
+  const respostaIA = await enviarPromptIA(prompt);
+  return respostaTexto + "\n\n" + chalk.gray("IA complementa: " + respostaIA);
 }
 
-// Rota do webhook Twilio Chat
+
+// Rota do webhook 
 app.post('/webhook', async (req, res) => {
   const mensagem = req.body.Body;
-  console.log('Mensagem recebida do Chat Twilio:', mensagem);
+  console.log('Mensagem recebida do Chat:', mensagem);
 
   const resposta = await menuURA(mensagem.trim());
   res.json({ Body: resposta });
 });
 
-// Servidor Node.js
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+// Rodar Servidor Node
+const PORTA = 3000;
+app.listen(PORTA, () => {
+  console.log(`Servidor rodando na porta ${PORTA}`);
   console.log("Pronto para receber mensagens do Twilio Chat...");
 });
 
-// Função de teste com input do terminal
+// Testar com input do terminal
+
 async function testeInterativo() {
   const rl = readline.createInterface({
     input: process.stdin,
@@ -158,9 +208,14 @@ Escolha a opção de teste:
 3 - Informações da empresa
 4 - Resumo divertido
 5 - Resumo com hobbies
+6 - Rodar Troubleshooting
 Digite o número da opção: `, async (op) => {
-    const resultado = await menuURA(op.trim());
-    console.log(resultado);
+    if (op.trim() === '6') {
+      await troubleshooting();
+    } else {
+      const resultado = await menuURA(op.trim());
+      console.log(resultado);
+    }
     rl.close();
   });
 }

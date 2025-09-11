@@ -1,199 +1,135 @@
-# AI Integration Developer - Desafio Técnico 🚀
+# Projeto: Menu Interativo de Clientes com IA
 
-> Projeto de demonstração de integração de **API REST**, menu **URA local simulada** e simulação de respostas **GPT-5 Plus**.
+Este projeto é um **simulador de URA (Unidade de Resposta Audível) interativa**, que busca dados de clientes de uma API fictícia e permite gerar diferentes formatos de saída, com integração opcional à IA da OpenAI (GPT) para complementos de informações e resumos. O projeto roda em Node.js e fornece interação via terminal e via endpoint HTTP (`/webhook`).
 
----
+## Funcionalidades
 
-## Objetivo do Projeto
+* Busca dados de clientes de `https://jsonplaceholder.typicode.com/users`.
+* Gera saídas em diversos formatos:
 
-* Integrar uma **API REST** utilizando JavaScript.
-* Criar um **fluxo de atendimento simulado** com Inteligência Artificial (**URA local simulada**).
-* Aplicar **engenharia de prompt**.
-* Realizar **troubleshooting básico**.
+  * Detalhes completos do cliente.
+  * Resumos amigáveis e divertidos.
+  * Informações da empresa.
+  * Resumo com hobbies fictícios.
+* Suporta integração com OpenAI GPT para gerar textos complementares.
+* Simula cenários de troubleshooting (API fora do ar, autenticação falha, JSON inválido).
+* Menu interativo no terminal para testar as funcionalidades sem precisar de frontend.
 
-O fluxo está preparado para futura integração com **GPT-5 Plus**, simulando atendimento inteligente a clientes.
+## Pré-requisitos
 
----
-
-## Tecnologias e Ferramentas
-
-* **Node.js** (18+)
-* **Express** – servidor web para webhook
-* **Chalk / Boxen** – estilização de console
-* **node-fetch** – fetch compatível com Node.js
-* **dotenv** – variáveis de ambiente
-* **OpenAI SDK** – integração com GPT real
-* **Readline** – input interativo pelo terminal
-* **Postman / curl** – para testes HTTP
-* **CodeSandbox / VS Code** – desenvolvimento
-
----
-
-## Estrutura do Projeto
+* Node.js >= 18
+* npm ou yarn
+* Conta e API Key da OpenAI (opcional, para uso real da IA)
+* Arquivo `.env` configurado com:
 
 ```
+OPENAI_API_KEY=your_api_key_here
+USE_FAKE_AI=true
+```
 
-Desafio\_IA\_Integration\_Developer/
-├─ .codesandbox/
-├─ .devcontainer/
-├─ .gitignore
-├─ index.js
-├─ package.json
-├─ yarn.lock
-├─ README.md
+> `USE_FAKE_AI=true` ativa respostas simuladas da IA para testes sem gastar créditos.
 
-````
+## Instalação
 
-* **index.js** → script principal:
-  * Busca dados do cliente via API pública
-  * Menu URA local simulada (terminal ou webhook)
-  * Envio de prompt para GPT real ou fallback local
-  * Formatação de dados em **cartões** via `boxen` + `chalk`
-  * Testes interativos e resumos divertidos
-
----
-
-## Dependências Node.js
-
-Instale todas as dependências:
+1. Clone o repositório:
 
 ```bash
-npm install express chalk boxen node-fetch dotenv openai
+git clone https://github.com/seuusuario/seu-projeto.git
+cd seu-projeto
 ```
 
----
+2. Instale as dependências:
 
-## Variáveis de Ambiente
+```bash
+npm install
+```
 
-Crie um arquivo `.env` na raiz do projeto:
+3. Configure o `.env` com sua chave da OpenAI (opcional):
 
 ```env
-OPENAI_API_KEY=sua_chave_aqui
-USE_FAKE_AI=true 
-
-```
-* `OPENAI_API_KEY` → chave para usar GPT real
-* `USE_FAKE_AI=true` → ativa respostas simuladas sem precisar da API
-
----
-
-## Integração com API Pública
-
-**Endpoint JSONPlaceholder:**
-[https://jsonplaceholder.typicode.com/users](https://jsonplaceholder.typicode.com/users)
-
-**Exemplo de resposta:**
-
-```json
-{
-  "id": 1,
-  "name": "Leanne Graham",
-  "username": "Bret",
-  "email": "Sincere@april.biz",
-  "address": { "street": "Kulas Light", "suite": "Apt. 556", "city": "Gwenborough", "zipcode": "92998-3874" },
-  "phone": "1-770-736-8031 x56442",
-  "website": "hildegard.org",
-  "company": { "name": "Romaguera-Crona", "catchPhrase": "Multi-layered client-server neural-net", "bs": "harness real-time e-markets" }
-}
+OPENAI_API_KEY=your_api_key_here
+USE_FAKE_AI=true
 ```
 
----
+## Execução
 
-## Menu URA Local Simulada
-
-| Opção | Descrição                              |
-| ----- | -------------------------------------- |
-| 1     | Detalhes completos do cliente (cartão) |
-| 2     | Resumo amigável                        |
-| 3     | Informações da empresa                 |
-| 4     | Resumo divertido                       |
-| 5     | Resumo com hobbies fictícios           |
-
-**Exemplo de saída (opção 1):**
-
-```text
-╭─────────────────────────────────────────────╮
-│ Nome: Leanne Graham (Bret)                  │
-│ Email: Sincere@april.biz                    │
-│ Telefone: 1-770-736-8031 x56442             │
-│ Endereço: Kulas Light, Apt. 556, Gwenborough│
-│ Website: hildegard.org                      │
-│ Empresa: Romaguera-Crona - "Multi-layered " │
-╰─────────────────────────────────────────────╯
-IA complementa: [FAKE GPT RESPONSE] Simulação de resposta detalhada
-```
-
----
-
-## Teste Interativo pelo Terminal
-
-Execute:
+### 1. Rodar o servidor Node
 
 ```bash
 node index.js
 ```
 
-Escolha uma opção de 1 a 5 para ver o output formatado.
+* O servidor ficará disponível na porta `3000`.
+* Endpoint disponível: `POST /webhook`
 
-> Funciona mesmo com fallback local (`USE_FAKE_AI=true`).
+  * Exemplo de payload JSON:
 
----
+  ```json
+  {
+    "Body": "1"
+  }
+  ```
+* Retorna a saída formatada conforme a opção enviada.
 
-## Webhook `/webhook`
+### 2. Teste interativo pelo terminal
 
-Rota HTTP para receber mensagens (simula Twilio Chat):
+* Ao executar `node index.js`, o menu interativo aparecerá no terminal:
 
-```http
-POST http://localhost:3000/webhook
-Content-Type: application/json
-
-Body:
-{
-  "Body": "1"
-}
+```
+Escolha a opção de teste:
+1 - Detalhes completos
+2 - Resumo amigável
+3 - Informações da empresa
+4 - Resumo divertido
+5 - Resumo com hobbies
+6 - Rodar Troubleshooting
+Digite o número da opção:
 ```
 
-Resposta JSON:
+* Digite o número desejado e pressione Enter.
+* Saída será exibida no terminal, usando cores e caixas de destaque (`chalk` + `boxen`).
 
-```json
-{
-  "Body": "╭─...\nIA complementa: [FAKE GPT RESPONSE]..."
-}
+## Saída esperada
+
+Exemplo para **opção 1 (Detalhes completos)**:
+
+```
+=== Dados do Cliente (Claros) ===
+Nome: Leanne Graham
+Username: Bret
+Email: Sincere@april.biz
+Telefone: 1-770-736-8031 x56442
+Endereço: Kulas Light, Apt. 556, Gwenborough
+Website: hildegard.org
+Empresa: Romaguera-Crona (Multi-layered client-server neural-net)
+=================================
 ```
 
-> Testável via Postman, curl ou Twilio Chat.
+* Além disso, será exibido um **cartão colorido** com as mesmas informações.
+* Complemento da IA (simulado ou real) será exibido abaixo, ex.:
 
----
+```
+IA complementa: [FAKE GPT RESPONSE] Simulação de resposta para: "Forneça detalhes completos do cliente..."
+```
 
-## Estratégia de Troubleshooting
+### Opção 6: Troubleshooting
 
-* Falha no fetch da API → array vazio + log de erro
-* Opção inválida no menu → `"Opção inválida. Escolha 1, 2, 3, 4 ou 5."`
-* Falha ao chamar IA → fallback local garante fluxo funcional
+* Simula erros de API, autenticação e JSON inválido.
+* Mensagens de erro são exibidas em vermelho.
 
----
+## Dependências principais
 
-## Próximos Passos
+* `express` → servidor HTTP
+* `readline` → input interativo no terminal
+* `chalk` → cores no console
+* `boxen` → caixas para destaque de texto
+* `node-fetch` → fetch de APIs externas
+* `dotenv` → variáveis de ambiente
+* `openai` → integração com GPT
 
-1. Substituir `USE_FAKE_AI=true` pelo GPT real usando `OPENAI_API_KEY`
-2. Seleção de múltiplos prompts por cliente
-3. Melhorar visualização dos cartões
-4. Documentar prompts reais e respostas da IA
+## Observações
 
----
+* O webhook `/webhook` é genérico e aceita JSON com o campo `Body`.
+* Para testes sem IA real, mantenha `USE_FAKE_AI=true`.
 
-## Observações Finais
-
-* Projeto pronto para rodar localmente sem GPT
-* Testes interativos via terminal ou webhook
-* Código modular, limpo e pronto para demonstração
-
----
-
-## Links Úteis
-
-* [JSONPlaceholder API](https://jsonplaceholder.typicode.com/)
-* [Node.js](https://nodejs.org/)
-* [Express](https://expressjs.com/)
-* [OpenAI API](https://platform.openai.com/)
 
