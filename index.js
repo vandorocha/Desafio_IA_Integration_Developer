@@ -1,19 +1,70 @@
 const express = require('express');
 const app = express();
-app.use(express.json()); // Para ler JSON de webhooks (ex: Twilio)
+app.use(express.json());
 const readline = require('readline');
 const chalk = require('chalk');
 const boxen = require('boxen');
-const fetch = require('node-fetch'); // Compatibilidade do fetch no Node
-require('dotenv').config(); // Carrega variáveis do .env
-const OpenAI = require('openai');
+const fetch = require('node-fetch');
+require('dotenv').config();
 
-// Inicializa cliente OpenAI
-const clienteIA = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// ================================
+// Histórico de conversa para diálogo contínuo
+// ================================
+let chatHistory = [];
 
+// ================================
+// Função para chamar OpenRouter GPT-3.5 Turbo com chat contínuo
+// ================================
+async function enviarPromptIA(prompt) {
+  if (process.env.USE_FAKE_AI === 'true') {
+    const fakeResposta = `[FAKE GPT RESPONSE] ${prompt}`;
+    chatHistory.push({ role: "assistant", content: fakeResposta });
+    return fakeResposta;
+  }
+
+  if (chatHistory.length === 0) {
+    chatHistory.push({ role: "system", content: "Você é um assistente útil, informativo e educado." });
+  }
+
+  chatHistory.push({ role: "user", content: prompt });
+
+  console.log(chalk.yellow("\n=== PROMPT ENVIADO PARA A IA (OpenRouter GPT-3.5 Turbo) ==="));
+  console.log(prompt);
+
+  try {
+    const resposta = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: chatHistory,
+        max_tokens: 300
+      })
+    });
+
+    const dados = await resposta.json();
+    if (dados.error) {
+      console.error("Erro da API OpenRouter:", dados.error);
+      return "Erro ao consultar a IA.";
+    }
+
+    const textoGerado = dados.choices?.[0]?.message?.content || "Sem resposta da IA";
+    chatHistory.push({ role: "assistant", content: textoGerado });
+
+    return textoGerado;
+
+  } catch (erro) {
+    console.error("Erro ao chamar OpenRouter:", erro.message);
+    return "Erro ao consultar a IA.";
+  }
+}
+
+// ================================
 // Buscar dados de clientes
+// ================================
 async function buscarClientes() {
   try {
     const resposta = await fetch('https://jsonplaceholder.typicode.com/users');
@@ -26,39 +77,9 @@ async function buscarClientes() {
   }
 }
 
-//Enviar prompt à IA 
-async function enviarPromptIA(prompt) {
-  try {
-    if (process.env.USE_FAKE_AI === 'true') {
-      console.log(chalk.yellow("\n=== PROMPT ENVIADO PARA A IA (simulado) ==="));
-      console.log(prompt);
-      return `[FAKE GPT RESPONSE] Simulação de resposta para: "${prompt}"`;
-    }
-
-    console.log(chalk.yellow("\n=== PROMPT ENVIADO PARA A IA ==="));
-    console.log(prompt);
-
-    const resposta = await clienteIA.chat.completions.create({
-      model: "gpt-4o-mini", // rápido e barato, pode trocar por "gpt-4o"
-      messages: [
-        { role: "system", content: "Você é um assistente que responde de forma clara e amigável." },
-        { role: "user", content: prompt }
-      ],
-    });
-
-    const respostaIA = resposta.choices[0].message.content;
-
-    console.log(chalk.green("\n=== RESPOSTA DA IA ==="));
-    console.log(respostaIA);
-
-    return respostaIA;
-  } catch (erro) {
-    console.error("Erro ao consultar a IA:", erro.message);
-    return "Erro ao consultar a IA.";
-  }
-}
-
-// Formatar sáida dos clientes
+// ================================
+// Funções de formatação de saída
+// ================================
 function formatarClienteSimples(cliente) {
   return `
 === Dados do Cliente (Claros) ===
@@ -108,26 +129,24 @@ function formatarResumoComHobbies(cliente) {
   return boxen(chalk.yellowBright(conteudo), { padding: 1, margin: 1, borderStyle: 'round', borderColor: 'blue' });
 }
 
-
+// ================================
 // Simulação de Troubleshooting
+// ================================
 async function troubleshooting() {
   console.log(chalk.yellow("\n=== Iniciando Troubleshooting ==="));
 
-  // Cenário 1: API fora do ar
   try {
     await fetch('https://jsonplaceholder.typicode.com/invalid-endpoint');
   } catch (erro) {
     console.error(chalk.red("Erro simulado: API fora do ar →", erro.message));
   }
 
-  // Cenário 2: Erro de autenticação simulado
   try {
     throw new Error("Token inválido ou não fornecido.");
   } catch (erro) {
     console.error(chalk.red("Erro simulado: Autenticação falhou →", erro.message));
   }
 
-  // Cenário 3: JSON inválido
   try {
     JSON.parse("{ invalid json }");
   } catch (erro) {
@@ -137,47 +156,84 @@ async function troubleshooting() {
   console.log(chalk.green("=== Troubleshooting concluído ===\n"));
 }
 
-// Menu URA
+// ================================
+// Menu URA (opções numéricas)
+// ================================
 async function menuURA(opcao) {
   const clientes = await buscarClientes();
   if (clientes.length === 0) return "Não há dados de clientes disponíveis.";
 
-  const cliente = clientes[0]; // sempre pegando o primeiro cliente
+  const cliente = clientes[0];
   let prompt = "";
   let respostaTexto = "";
 
   switch(opcao) {
-    case '1': // Detalhes completos
+    case '1':
       prompt = `Forneça detalhes completos do cliente: ${JSON.stringify(cliente)}`;
       respostaTexto = formatarClienteSimples(cliente) + "\n" + formatarClienteCartao(cliente);
       break;
-    case '2': // Resumo amigável
+    case '2':
       prompt = `Crie um resumo amigável do cliente: ${JSON.stringify(cliente)}`;
       respostaTexto = formatarResumoAmigavel(cliente);
       break;
-    case '3': // Informações da empresa
+    case '3':
       prompt = `Forneça informações da empresa do cliente: ${JSON.stringify(cliente.company)}`;
       respostaTexto = `Empresa: ${cliente.company.name}\nCatchPhrase: ${cliente.company.catchPhrase}\nAtividades: ${cliente.company.bs}`;
       break;
-    case '4': // Resumo divertido
+    case '4':
       prompt = `Crie um resumo divertido e descontraído do cliente: ${JSON.stringify(cliente)}`;
       respostaTexto = formatarResumoDivertido(cliente);
       break;
-    case '5': // Resumo com hobbies
+    case '5':
       prompt = `Crie um resumo incluindo hobbies fictícios do cliente: ${JSON.stringify(cliente)}`;
       respostaTexto = formatarResumoComHobbies(cliente);
       break;
+    case '6':
+      await troubleshooting();
+      return "Troubleshooting concluído.";
     default:
-      return "Opção inválida. Escolha 1, 2, 3, 4 ou 5.";
+      return "Opção inválida. Escolha 1, 2, 3, 4, 5 ou 6.";
   }
 
-  // Chamada para a IA (real ou simulada)
   const respostaIA = await enviarPromptIA(prompt);
   return respostaTexto + "\n\n" + chalk.gray("IA complementa: " + respostaIA);
 }
 
+// ================================
+// Função de chat com menu numérico integrado
+// ================================
+async function chatComMenu() {
+  console.log(chalk.green("\n=== Chat & Menu iniciado ==="));
+  console.log("Digite uma pergunta livre ou um número do menu (1-6). Digite 'sair' para encerrar.\n");
 
-// Rota do webhook 
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  rl.on('line', async (input) => {
+    const texto = input.trim().toLowerCase();
+    if (texto === 'sair') {
+      console.log(chalk.green("Encerrando chat..."));
+      rl.close();
+      process.exit(0);
+    }
+
+    // Se for número do menu, executa menuURA
+    if (['1','2','3','4','5','6'].includes(texto)) {
+      const resultado = await menuURA(texto);
+      console.log(resultado + "\n");
+    } else {
+      // Pergunta livre
+      const resposta = await enviarPromptIA(input);
+      console.log(chalk.gray("\nIA: " + resposta + "\n"));
+    }
+  });
+}
+
+// ================================
+// Rota do webhook
+// ================================
 app.post('/webhook', async (req, res) => {
   const mensagem = req.body.Body;
   console.log('Mensagem recebida do Chat:', mensagem);
@@ -186,39 +242,16 @@ app.post('/webhook', async (req, res) => {
   res.json({ Body: resposta });
 });
 
-// Rodar Servidor Node
+// ================================
+// Rodar servidor Node
+// ================================
 const PORTA = 3000;
 app.listen(PORTA, () => {
   console.log(`Servidor rodando na porta ${PORTA}`);
-  console.log("Pronto para receber mensagens do Twilio Chat...");
+  console.log("Pronto para receber mensagens do webhook...");
 });
 
-// Testar com input do terminal
-
-async function testeInterativo() {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
-
-  rl.question(`
-Escolha a opção de teste:
-1 - Detalhes completos
-2 - Resumo amigável
-3 - Informações da empresa
-4 - Resumo divertido
-5 - Resumo com hobbies
-6 - Rodar Troubleshooting
-Digite o número da opção: `, async (op) => {
-    if (op.trim() === '6') {
-      await troubleshooting();
-    } else {
-      const resultado = await menuURA(op.trim());
-      console.log(resultado);
-    }
-    rl.close();
-  });
-}
-
-// Descomente abaixo para rodar o teste interativo no terminal
-testeInterativo();
+// ================================
+// Iniciar chat com menu integrado
+// ================================
+chatComMenu();
